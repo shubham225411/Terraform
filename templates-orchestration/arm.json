@@ -1,0 +1,81 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "planName": {
+            "type": "string"
+        },
+        "webAppName": {
+            "type": "string"
+        },
+        "storageAccountName": {
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "location": "[resourceGroup().location]",
+            "name": "[parameters('storageAccountName')]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+                    "apiVersion": "2019-06-01",
+                    "name": "/default/input",
+                    "dependsOn": [
+                        // jispe depend karta hai uska type and uska name
+                        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+                    ]
+                }
+            ]
+        },
+
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-03-01",
+            "name": "[parameters('planName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "S1"
+            },
+            "properties": {
+                    "elasticScaleEnabled": "bool",
+                     "freeOfferExpirationTime": "string",
+                        "hostingEnvironmentProfile": {
+                            "id": "string"
+            }
+        }
+        },
+        {
+            "type":"Microsoft.Web/sites",
+            "apiVersion": "2018-02-01",
+            "name": "[parameters('webAppName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('planName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('planName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "storageAccessKey",
+                            // listkey mai resource ka name and api version
+                            // name chaiye to uspe dpeend ho gaya, so dependencies ke liye resourceid use kiya
+                            // and then api de diya , usse an object return hua jiska first member ka value chahiye tha
+                            "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value]"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+    
+}
