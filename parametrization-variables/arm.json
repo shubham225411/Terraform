@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string", // type is the only mandatory property of a parameter
+            "defaultValue":"[uniqueString(resourceGroup().id)]", // to generate a unique name as each resource group has a unique id
+            "minLength":3,
+            "maxLength":24,
+            "metadata": {
+                "description": "Unique DNS name for the storage account"
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "allowedValues": [
+            "Premium_LRS",
+            "Premium_ZRS",
+            "Standard_GRS",
+            "Standard_GZRS",
+            "Standard_LRS",
+            "Standard_RAGRS",
+            "Standard_RAGZRS",
+            "Standard_ZRS"
+            ],
+            "metadata": {
+                "description":" Approved SKU for this deployment"
+            }
+        },
+        "storageLocation": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('storageAccountName')]", 
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "tags": {
+                "displayName": "[uniqueString(resourceGroup().id)]"
+            },
+            "location": "[parameters('storageLocation')]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "[parameters('storageAccountType')]",
+                "tier": "Premium"
+            }
+        }
+    ]
+}
