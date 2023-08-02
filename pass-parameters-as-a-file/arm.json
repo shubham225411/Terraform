@@ -1,0 +1,32 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountname": {
+      "type": "string",
+      //"defaultValue": "Standard_LRS", // we can also use expression like "defaultValue": "[resourceGroup().location]"
+      
+      "metadata": {
+        "description": "Storage Account name"
+      }
+    }
+},
+  
+    "resources": [
+        {
+            "name": "[parameters('storageAccountname')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "tags": {
+                "displayName": "storageaccount1"
+            },
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Premium_LRS",
+                "tier": "Premium"
+            }
+        }
+    ]
+  
+}
